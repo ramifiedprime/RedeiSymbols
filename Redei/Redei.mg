@@ -81,7 +81,11 @@ function EFieldBetaConstructor(a,b)
 	if not isnorm then print "UNDEFINED: a,b does not give a solution to x^2=ay^2+bz^2"; return 9; end if;
 	beta:=beta[1];
 	P<x>:=PolynomialRing(RationalField());
-	E:=ext<Ka|x^2-b:Abs:=true>;
+	if IsSquare(Ka!b) then
+		E:=Ka;
+	else
+		E:=ext<Ka|x^2-b:Abs:=true>;
+	end if;
 	return true, E, beta;
 end function;
 
