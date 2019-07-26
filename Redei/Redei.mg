@@ -100,7 +100,11 @@ end function;
 
 function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a lot!
 	P<x>:=PolynomialRing(RationalField());
-	K:=NumberField(x^2-a*b);
+	if IsSquare(a/b) then 
+		K:=RationalsAsNumberField();
+	else
+		K:=NumberField(x^2-a*b);
+	end if;
 	E:=AbsoluteField(E);
 	P<x>:=PolynomialRing(E);
 	F:=AbsoluteField(NumberField(x^2-beta));
@@ -158,7 +162,11 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	_, E, beta:=EFieldBetaConstructor(a,b);
 	_, F:=MinimallyRamifiedFConstructor(a,b,E,beta);
 	P<x>:=PolynomialRing(RationalField());
-	K:=NumberField(x^2-a*b);
+	if IsSquare(a/b) then 
+		K:=RationalsAsNumberField();
+	else
+		K:=NumberField(x^2-a*b);
+	end if;
 	C:=GetCorrespondingIdeal(c, K);
 	if not IsSubfield(K,F) then print "ERROR: Catastrophic failure, F was not extension of K.";end if;
 	AbF:=AbelianExtension(RelativeField(K,F));
