@@ -163,7 +163,7 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	_, F:=MinimallyRamifiedFConstructor(a,b,E,beta);
 	P<x>:=PolynomialRing(RationalField());
 	if IsSquare(a/b) then 
-		K:=RationalsAsNumberField();
+		K:=RationalField();
 	else
 		K:=NumberField(x^2-a*b);
 	end if;
