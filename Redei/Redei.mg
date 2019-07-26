@@ -163,13 +163,17 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	_, F:=MinimallyRamifiedFConstructor(a,b,E,beta);
 	P<x>:=PolynomialRing(RationalField());
 	if IsSquare(a/b) then 
-		K:=RationalField();
+		K:=RationalsAsNumberField();
 	else
 		K:=NumberField(x^2-a*b);
 	end if;
 	C:=GetCorrespondingIdeal(c, K);
 	if not IsSubfield(K,F) then print "ERROR: Catastrophic failure, F was not extension of K.";end if;
-	AbF:=AbelianExtension(RelativeField(K,F));
+	if IsSquare(a/b) then // abelian extension doesnt like RationalsAsNumberField
+		AbF:=AbelianExtension(RelativeField(RationalField(),F));
+	else
+		AbF:=AbelianExtension(RelativeField(K,F));
+	end if;
 	Art:=ArtinMap(AbF);
 	F:=NumberField(AbF);
 	if c gt 0 then
