@@ -74,9 +74,10 @@ end function;
 
 //Constructs E/K_a/QQ and the beta needed for finding some choice of F
 function EFieldBetaConstructor(a,b) 
-	if IsSquare(a) or IsSquare(b) or IsSquare(a/b) then return 9; end if;
+	if IsSquare(a) or IsSquare(b) then return 9; end if;
+	// if IsSquare(a) or IsSquare(b) or IsSquare(a/b) then return 9; end if;
 	Ka:=QuadraticField(a);
-	isnorm,beta:=NormEquation(RingOfIntegers(Ka), b);
+	isnorm,beta:=NormEquation(RingOfIntegers(Ka), b: Exact:=true);
 	if not isnorm then print "UNDEFINED: a,b does not give a solution to x^2=ay^2+bz^2"; return 9; end if;
 	beta:=beta[1];
 	P<x>:=PolynomialRing(RationalField());
