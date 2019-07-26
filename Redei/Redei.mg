@@ -157,7 +157,7 @@ end function;
 //////////////////////////////////////////////
 function RedeiSymbol(a,b,c: Additive:=false)
 	T:=TestDefined(a,b,c);
-	if T ne 0 then print ErrorCodesRedei(T); return 0; end if;
+	if T ne 0 then print ErrorCodesRedei(T); return 2; end if;
 	if IsSquare(a) or IsSquare(b) or IsSquare(c) then return 1 ; end if;
 	_, E, beta:=EFieldBetaConstructor(a,b);
 	_, F:=MinimallyRamifiedFConstructor(a,b,E,beta);
