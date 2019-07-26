@@ -175,7 +175,6 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	if c gt 0 then
 		return RtnValues(Art(C)(F.1) eq F.1, Additive);
 	else
-		print "NOT IMPLEMENTED: c<0 is not implemented yet, sorry!";
-		return 0;
+		return RtnValues(Art(C)(F.1) eq ComplexConjugate(F.1), Additive);
 	end if;
 end function;
