@@ -6,10 +6,15 @@
 ///////////////////////////////////////
 // Useful additional functions.
 ///////////////////////////////////////
+//Returns the squarefree part of the input integer.
+function SquarefreeIntegerPart(a)
+	if IsSquare(a) then return 1; end if;
+	return Sign(a)*(&*[p: p in PrimeFactors(a)| IsOdd(Valuation(a,p))]); //redefine as squarefree part
+end function;
+
 //Returns the quadratic discriminant associated to \mathbb{Q}(\sqrt{a})
 function QuadraticDiscriminant(a)
-	if IsSquare(a) then return 1; end if;
-	a:=&*[p: p in PrimeFactors(a)| IsOdd(Valuation(a,p))]; //redefine as squarefree part
+	a:=SquarefreeIntegerPart(a);
 	if a mod 4 eq 1 then return a;
 	else return 4*a; 
 	end if;
@@ -23,22 +28,23 @@ end function;
 
 // returns the ramification index of the rational prime $p$ in the GALOIS extension K/QQ
 function MyRamificationIndex(K,p)
-	Factorisation(p*RingOfIntegers(K))[1][2];
+	return Factorisation(p*RingOfIntegers(K))[1][2];
 end function;
 
 ///////////////////////////////////////
-// Tests for errors catching.
+// Tests for errors catching and general
+// admin functions.
 ///////////////////////////////////////
 function TestHilbert(a,b) // 0 for all were 1, 1 for something was not trivial
 	divs:={p : p in PrimeDivisors(a) cat PrimeDivisors(b)};
 	for p in divs do
-		if HilbertSymbol(a,b,p) ne 1 then return 1; end if;
+		if HilbertSymbol(a,b,p) ne 1 then return p; end if;
 	end for;
 	return 0;
 end function;
 
 function TestDefined(a,b,c) // returns 1 if fails Hilbert testing, 2 if fails gcd testing, 0 is pass
-	if 1 in {TestHilbert(a,b), TestHilbert(b,c), TestHilbert(a,c)} then return 1; end if;
+	if {TestHilbert(a,b), TestHilbert(b,c), TestHilbert(a,c)} ne {0} then return 1; end if;
 	discrims:=[QuadraticDiscriminant(x): x in [a,b,c]];
 	if GCD(discrims) ne 1 then return 2; end if;
 	return 0;
@@ -50,6 +56,16 @@ function ErrorCodesRedei(x)
 	elif x eq 3 then return "UNDEFINED: a,b does not give a solution to x^2=ay^2+bz^2";
 	elif x eq 9 then return "UNDEFINED: Something unexpected happened";
 	else "Unknown error code";end if;
+end function;
+
+function RtnValues(triv, additive)
+	if triv then
+		if additive then return 0;
+		else return 1; end if;
+	else
+		if additive then return 1;
+		else return -1; end if;
+	end if;
 end function;
 
 ///////////////////////////////////////
@@ -71,7 +87,8 @@ end function;
 function Is2MinimallyRamified(F,K)
 	OK:=RingOfIntegers(K);
 	p2:=Factorisation(2*OK)[1][1];
-	if BaseField(F) ne K then F:=RelativeField(AbsoluteField(K),AbsoluteField(F));end if;
+	if not IsSubfield(K,F) then print "ERROR: Catastrophic failure, F was not extension of K."; end if;
+	if BaseField(F) ne K then F:=RelativeField(AbsoluteField(K),AbsoluteField(F));end if;//Errors without doing this test first, Magma handles subfields badly!
 	if Valuation(Conductor(AbelianExtension(F)), p2) eq 2 then return true; 
 	else return false; end if;
 end function;
@@ -92,7 +109,7 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 		if Delta_a mod p eq 0 and Delta_b mod p eq 0 then continue; // Forced Ramification
 		else beta:=p*beta;end if;
 	end for;
-	F:=AbsoluteField(NumberField(x^2-beta));
+	F:=NumberField(x^2-beta);
 	//2-minimal ramification
 	if avoidablyramifiedat2 then
 		if (IsOdd(Delta_a) and IsOdd(Delta_b))//Lemma 7.1 part 1
@@ -103,7 +120,7 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 				beta_t:=beta*t;
 				if not 2 in [p: p in RamifiedRationalPrimes(AbsoluteField(NumberField(x^2-beta_t)))| MyRamificationIndex(F,p) ne MyRamificationIndex(K,p)] then
 					beta:=beta_t;
-					F:=AbsoluteField(NumberField(x^2-beta));
+					F:=NumberField(x^2-beta);
 				end if;
 			end for;
 		elif not Is2MinimallyRamified(F,K) then 
@@ -113,19 +130,38 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 			F:=NumberField(x^2-beta);
 		end if;
 	end if;
-	return F;
+	return true, F;
+end function;
+
+function GetCorrespondingIdeal(c, K)
+	OK:=RingOfIntegers(K);
+	C:=1*OK;
+	for p in PrimeFactors(SquarefreeIntegerPart(c)) do
+		C:=C*Factorisation(p*OK)[1][1];
+	end for;
+	return C;
 end function;
 
 //////////////////////////////////////////////
 // The RedeiSymbol
+// requires input a,b,c to be integers!
 //////////////////////////////////////////////
-function RedeiSymbol(a,b,c)
+function RedeiSymbol(a,b,c: Additive:=false)
 	T:=TestDefined(a,b,c);
 	if T ne 0 then print ErrorCodesRedei(T); return 0; end if;
 	if IsSquare(a) or IsSquare(b) or IsSquare(c) then return 1 ; end if;
-	E, beta:=EFieldBetaConstructor(a,b);
-	F:=MinimallyRamifiedFConstructor(a,b,E,beta);
+	_, E, beta:=EFieldBetaConstructor(a,b);
+	_, F:=MinimallyRamifiedFConstructor(a,b,E,beta);
 	P<x>:=PolynomialRing(RationalField());
 	K:=NumberField(x^2-a*b);
-
+	C:=GetCorrespondingIdeal(c, K);
+	if not IsSubfield(K,F) then print "ERROR: Catastrophic failure, F was not extension of K.";end if;
+	AbF:=AbelianExtension(RelativeField(K,F));
+	Art:=ArtinMap(AbF);
+	F:=NumberField(AbF);
+	if c gt 0 then
+		return RtnValues(Art(C)(F.1) eq F.1, Additive);
+	else
+		print "NOT IMPLEMENTED: c<0 is not implemented yet, sorry!";
+	end if;
 end function;
