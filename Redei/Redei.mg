@@ -8,7 +8,8 @@
 ///////////////////////////////////////
 //Returns the squarefree part of the input integer.
 function SquarefreeIntegerPart(a)
-	if IsSquare(a) then return 1; end if;
+	if IsSquare(a) then return 1; 
+	elif IsSquare(-a) then return -1;end if;
 	return Sign(a)*(&*[p: p in PrimeFactors(a)| IsOdd(Valuation(a,p))]); //redefine as squarefree part
 end function;
 
