@@ -176,5 +176,6 @@ function RedeiSymbol(a,b,c: Additive:=false)
 		return RtnValues(Art(C)(F.1) eq F.1, Additive);
 	else
 		print "NOT IMPLEMENTED: c<0 is not implemented yet, sorry!";
+		return 0;
 	end if;
 end function;
