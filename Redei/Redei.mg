@@ -23,7 +23,7 @@ end function;
 
 // returns the ramification index of the rational prime $p$ in the GALOIS extension K/QQ
 function MyRamificationIndex(K,p)
-	Factorisation(7*RingOfIntegers(E))[1][2];
+	Factorisation(p*RingOfIntegers(K))[1][2];
 end function;
 
 ///////////////////////////////////////
@@ -57,15 +57,23 @@ end function;
 ///////////////////////////////////////
 
 //Constructs E/K_a/QQ and the beta needed for finding some choice of F
-function EFieldBetaConstructor(a,b: abs:=false, minram:=false) 
+function EFieldBetaConstructor(a,b) 
 	if IsSquare(a) or IsSquare(b) or IsSquare(a/b) then return 9; end if;
 	Ka:=QuadraticField(a);
 	isnorm,beta:=NormEquation(RingOfIntegers(Ka), b);
-	if not isnorm then return 3; end if;
+	if not isnorm then print "UNDEFINED: a,b does not give a solution to x^2=ay^2+bz^2"; return 9; end if;
 	beta:=beta[1];
 	P<x>:=PolynomialRing(RationalField());
 	E:=ext<Ka|x^2-b:Abs:=true>;
 	return true, E, beta;
+end function;
+
+function Is2MinimallyRamified(F,K)
+	OK:=RingOfIntegers(K);
+	p2:=Factorisation(2*OK)[1][1];
+	if BaseField(F) ne K then F:=RelativeField(AbsoluteField(K),AbsoluteField(F));end if;
+	if Valuation(Conductor(AbelianExtension(F)), p2) eq 2 then return true; 
+	else return false; end if;
 end function;
 
 function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a lot!
@@ -98,27 +106,26 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 					F:=AbsoluteField(NumberField(x^2-beta));
 				end if;
 			end for;
-		else
-			continue; // need to handle case 4!!
+		elif not Is2MinimallyRamified(F,K) then 
+			_,sqrta:=IsSquare(E!a);
+			tau:=(1+sqrta)^2/2;
+			beta=tau*beta;
+			F:=NumberField(x^2-beta);
 		end if;
 	end if;
 	return F;
 end function;
 
-//AbsoluteField(F) will reground to \mathbb{Q}.
-
-// function ClassicalRedei
-
-// function BuildMinimallyRamifiedField(a,b)// returns F, K
-// 	K:=QuadraticField(a*b);
-// 	P<x>:=PolynomialRing(K);
-// 	//To be completed.
-// end function;
-
-function Redei(a,b,c)
+//////////////////////////////////////////////
+// The RedeiSymbol
+//////////////////////////////////////////////
+function RedeiSymbol(a,b,c)
 	T:=TestDefined(a,b,c);
 	if T ne 0 then print ErrorCodesRedei(T); return 0; end if;
 	if IsSquare(a) or IsSquare(b) or IsSquare(c) then return 1 ; end if;
-	print "Valid!";
-	return 0;
+	E, beta:=EFieldBetaConstructor(a,b);
+	F:=MinimallyRamifiedFConstructor(a,b,E,beta);
+	P<x>:=PolynomialRing(RationalField());
+	K:=NumberField(x^2-a*b);
+
 end function;
