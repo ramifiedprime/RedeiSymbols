@@ -169,6 +169,11 @@ function RedeiSymbol(a,b,c: Additive:=false)
 		K:=NumberField(x^2-a*b);
 	end if;
 	C:=GetCorrespondingIdeal(c, K);
+	K;
+	E;
+	beta;
+	F;
+	C;
 	if not IsSubfield(K,F) then print "ERROR: Catastrophic failure, F was not extension of K.";end if;
 	if IsSquare(a/b) then // abelian extension doesnt like RationalsAsNumberField
 		AbF:=AbelianExtension(RelativeField(RationalField(),F));
@@ -177,6 +182,9 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	end if;
 	Art:=ArtinMap(AbF);
 	F:=NumberField(AbF);
+	Art(C)(F.1);
+	F.1;
+	[IsComplex(p): p in InfinitePlaces(F)];
 	if c gt 0 then
 		return RtnValues(Art(C)(F.1) eq F.1, Additive);
 	else
