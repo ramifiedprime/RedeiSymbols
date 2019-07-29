@@ -24,7 +24,7 @@ end function;
 //Returns a list of rational primes which have ramification in the field $K$ which
 //is assumed to be Galois.
 function RamifiedRationalPrimes(K)
-	return [p: p in PrimeFactors(Discriminant(AbsoluteField(K)))];
+	return PrimeFactors(Discriminant(Integers(AbsoluteField(K))));
 end function;
 
 // returns the ramification index of the rational prime $p$ in the GALOIS extension K/QQ
@@ -114,13 +114,16 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 
 	ramprimes:=[p: p in RamifiedRationalPrimes(F)| MyRamificationIndex(F,p) ne MyRamificationIndex(K,p)];
 	oddprimes:=[p:p in ramprimes| IsOdd(p)];
+	ramprimes;
 	avoidablyramifiedat2:= 2 in ramprimes and (IsOdd(Delta_a) or IsOdd(Delta_b));//the second statement is for forced ramification
 	for p in oddprimes do
 		if Delta_a mod p eq 0 and Delta_b mod p eq 0 then continue; // Forced Ramification
 		else beta:=p*beta;end if;
 	end for;
 	F:=NumberField(x^2-beta);
+	F;
 	//2-minimal ramification
+	avoidablyramifiedat2;
 	if avoidablyramifiedat2 then
 		if (IsOdd(Delta_a) and IsOdd(Delta_b))//Lemma 7.1 part 1
 		or (IsEven(Delta_a) and Delta_b mod 8 eq 1) //Lemma 7.1 part 3
@@ -169,11 +172,11 @@ function RedeiSymbol(a,b,c: Additive:=false)
 		K:=NumberField(x^2-a*b);
 	end if;
 	C:=GetCorrespondingIdeal(c, K);
-	K;
-	E;
-	beta;
-	F;
-	C;
+	// K;
+	// E;
+	// beta;
+	// F;
+	// C;
 	if not IsSubfield(K,F) then print "ERROR: Catastrophic failure, F was not extension of K.";end if;
 	if IsSquare(a/b) then // abelian extension doesnt like RationalsAsNumberField
 		AbF:=AbelianExtension(RelativeField(RationalField(),F));
@@ -182,9 +185,8 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	end if;
 	Art:=ArtinMap(AbF);
 	F:=NumberField(AbF);
-	Art(C)(F.1);
-	F.1;
-	[IsComplex(p): p in InfinitePlaces(F)];
+	// Art(C)(F.1);
+	// F.1;
 	if c gt 0 then
 		return RtnValues(Art(C)(F.1) eq F.1, Additive);
 	else
