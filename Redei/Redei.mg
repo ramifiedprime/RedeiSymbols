@@ -78,7 +78,9 @@ function EFieldBetaConstructor(a,b)
 	if IsSquare(a) or IsSquare(b) then return 9; end if;
 	// if IsSquare(a) or IsSquare(b) or IsSquare(a/b) then return 9; end if;
 	Ka:=QuadraticField(a);
-	isnorm,beta:=NormEquation(RingOfIntegers(Ka), b: Exact:=true);
+	isnorm,beta:=NormEquation(Ka, b);
+	beta:=beta[1];
+	print Norm(beta) eq b;
 	if not isnorm then print "UNDEFINED: a,b does not give a solution to x^2=ay^2+bz^2"; return 9; end if;
 	beta:=beta[1];
 	P<x>:=PolynomialRing(RationalField());
@@ -112,18 +114,16 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 	Delta_a:=QuadraticDiscriminant(a);
 	Delta_b:=QuadraticDiscriminant(b);
 
+
 	ramprimes:=[p: p in RamifiedRationalPrimes(F)| MyRamificationIndex(F,p) ne MyRamificationIndex(K,p)];
 	oddprimes:=[p:p in ramprimes| IsOdd(p)];
-	ramprimes;
 	avoidablyramifiedat2:= 2 in ramprimes and (IsOdd(Delta_a) or IsOdd(Delta_b));//the second statement is for forced ramification
 	for p in oddprimes do
 		if Delta_a mod p eq 0 and Delta_b mod p eq 0 then continue; // Forced Ramification
 		else beta:=p*beta;end if;
 	end for;
 	F:=NumberField(x^2-beta);
-	F;
 	//2-minimal ramification
-	avoidablyramifiedat2;
 	if avoidablyramifiedat2 then
 		if (IsOdd(Delta_a) and IsOdd(Delta_b))//Lemma 7.1 part 1
 		or (IsEven(Delta_a) and Delta_b mod 8 eq 1) //Lemma 7.1 part 3
@@ -131,7 +131,8 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 		then
 			for t in [-1,2,-2] do
 				beta_t:=beta*t;
-				if not 2 in [p: p in RamifiedRationalPrimes(AbsoluteField(NumberField(x^2-beta_t)))| MyRamificationIndex(F,p) ne MyRamificationIndex(K,p)] then
+				F_t:=NumberField(x^2-beta_t);
+				if not 2 in [p: p in RamifiedRationalPrimes(AbsoluteField(F_t))| MyRamificationIndex(F_t,p) ne MyRamificationIndex(K,p)] then
 					beta:=beta_t;
 					F:=NumberField(x^2-beta);
 				end if;
@@ -164,7 +165,7 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	if T ne 0 then print ErrorCodesRedei(T); return 2; end if;
 	if IsSquare(a) or IsSquare(b) or IsSquare(c) then return 1 ; end if;
 	_, E, beta:=EFieldBetaConstructor(a,b);
-	_, F:=MinimallyRamifiedFConstructor(a,b,E,beta);
+	_, F:=MinimallyRamifiedFConstructor(a,b,E,-beta);
 	P<x>:=PolynomialRing(RationalField());
 	if IsSquare(a/b) then 
 		K:=RationalsAsNumberField();
@@ -185,8 +186,6 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	end if;
 	Art:=ArtinMap(AbF);
 	F:=NumberField(AbF);
-	// Art(C)(F.1);
-	// F.1;
 	if c gt 0 then
 		return RtnValues(Art(C)(F.1) eq F.1, Additive);
 	else
