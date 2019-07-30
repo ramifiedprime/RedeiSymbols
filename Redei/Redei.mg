@@ -37,10 +37,11 @@ end function;
 // admin functions.
 ///////////////////////////////////////
 function TestHilbert(a,b) // 0 for all were 1, 1 for something was not trivial
-	divs:={p : p in PrimeDivisors(a) cat PrimeDivisors(b)};
+	divs:={p : p in PrimeDivisors(a) cat PrimeDivisors(b)}; // dont need to check infinity by reciprocity
 	for p in divs do
 		if HilbertSymbol(a,b,p) ne 1 then return p; end if;
 	end for;
+	if a lt 0 and b lt 0 then return -1; end if; //infinite place
 	return 0;
 end function;
 
@@ -78,7 +79,7 @@ function EFieldBetaConstructor(a,b)
 	if IsSquare(a) or IsSquare(b) then return 9; end if;
 	// if IsSquare(a) or IsSquare(b) or IsSquare(a/b) then return 9; end if;
 	Ka:=QuadraticField(a);
-	isnorm,beta:=NormEquation(Ka, b);
+	isnorm,beta:=NormEquation(Ka, RationalField()!b); //If you do not include the coercion then a=-19,b=5 fails -- magma being magma.
 	beta:=beta[1];
 	if not isnorm then print "UNDEFINED: a,b does not give a solution to x^2=ay^2+bz^2"; return 9; end if;
 	P<x>:=PolynomialRing(RationalField());
@@ -115,6 +116,10 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 	ramprimes:=[p: p in RamifiedRationalPrimes(F)| MyRamificationIndex(F,p) ne MyRamificationIndex(K,p)];
 	oddprimes:=[p:p in ramprimes| IsOdd(p)];
 	avoidablyramifiedat2:= 2 in ramprimes and (IsOdd(Delta_a) or IsOdd(Delta_b));//the second statement is for forced ramification
+	// RamifiedRationalPrimes(F);
+	// RamifiedRationalPrimes(K);
+	// ramprimes;
+	// avoidablyramifiedat2;
 	for p in oddprimes do
 		if Delta_a mod p eq 0 and Delta_b mod p eq 0 then continue; // Forced Ramification
 		else beta:=p*beta;end if;
@@ -162,14 +167,13 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	if T ne 0 then print ErrorCodesRedei(T); return 2; end if;
 	if IsSquare(a) or IsSquare(b) or IsSquare(c) then return 1 ; end if;
 	_, E, beta:=EFieldBetaConstructor(a,b);
-	_, F:=MinimallyRamifiedFConstructor(a,b,E,-beta);
+	_, F:=MinimallyRamifiedFConstructor(a,b,E,beta);
 	P<x>:=PolynomialRing(RationalField());
 	if IsSquare(a/b) then 
 		K:=RationalsAsNumberField();
 	else
 		K:=NumberField(x^2-a*b);
 	end if;
-	C:=GetCorrespondingIdeal(c, K);
 	// K;
 	// E;
 	// beta;
@@ -182,10 +186,11 @@ function RedeiSymbol(a,b,c: Additive:=false)
 		AbF:=AbelianExtension(RelativeField(K,F));
 	end if;
 	Art:=ArtinMap(AbF);
-	F:=NumberField(AbF);
+	FF:=NumberField(AbF);
+	C:=GetCorrespondingIdeal(c, K);
 	if c gt 0 then
-		return RtnValues(Art(C)(F.1) eq F.1, Additive);
+		return RtnValues(Art(C)(FF.1) eq FF.1, Additive); // TODO: remove extra return data
 	else
-		return RtnValues(Art(C)(F.1) eq ComplexConjugate(F.1), Additive);
+		return RtnValues(Art(C)(FF.1) eq ComplexConjugate(FF.1), Additive);
 	end if;
 end function;
