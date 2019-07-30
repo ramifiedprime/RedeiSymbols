@@ -29,7 +29,7 @@ end function;
 
 // returns the ramification index of the rational prime $p$ in the GALOIS extension K/QQ
 function MyRamificationIndex(K,p)
-	return Factorisation(p*RingOfIntegers(K))[1][2];
+	return Factorisation(p*RingOfIntegers(AbsoluteField(K)))[1][2];
 end function;
 
 ///////////////////////////////////////
@@ -44,7 +44,7 @@ function TestHilbert(a,b) // 0 for all were 1, 1 for something was not trivial
 	return 0;
 end function;
 
-function TestDefined(a,b,c) // returns 1 if fails Hilbert testing, 2 if fails gcd testing, 0 is pass
+function TestRedeiDefined(a,b,c) // returns 1 if fails Hilbert testing, 2 if fails gcd testing, 0 is pass
 	if {TestHilbert(a,b), TestHilbert(b,c), TestHilbert(a,c)} ne {0} then return 1; end if;
 	discrims:=[QuadraticDiscriminant(x): x in [a,b,c]];
 	if GCD(discrims) ne 1 then return 2; end if;
@@ -80,9 +80,7 @@ function EFieldBetaConstructor(a,b)
 	Ka:=QuadraticField(a);
 	isnorm,beta:=NormEquation(Ka, b);
 	beta:=beta[1];
-	print Norm(beta) eq b;
 	if not isnorm then print "UNDEFINED: a,b does not give a solution to x^2=ay^2+bz^2"; return 9; end if;
-	beta:=beta[1];
 	P<x>:=PolynomialRing(RationalField());
 	if IsSquare(Ka!b) then
 		E:=Ka;
@@ -113,8 +111,7 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 	F:=AbsoluteField(NumberField(x^2-beta));
 	Delta_a:=QuadraticDiscriminant(a);
 	Delta_b:=QuadraticDiscriminant(b);
-
-
+	//p-ramification
 	ramprimes:=[p: p in RamifiedRationalPrimes(F)| MyRamificationIndex(F,p) ne MyRamificationIndex(K,p)];
 	oddprimes:=[p:p in ramprimes| IsOdd(p)];
 	avoidablyramifiedat2:= 2 in ramprimes and (IsOdd(Delta_a) or IsOdd(Delta_b));//the second statement is for forced ramification
@@ -129,18 +126,18 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 		or (IsEven(Delta_a) and Delta_b mod 8 eq 1) //Lemma 7.1 part 3
 		or (IsEven(Delta_b) and Delta_a mod 8 eq 1) 
 		then
-			for t in [-1,2,-2] do
-				beta_t:=beta*t;
-				F_t:=NumberField(x^2-beta_t);
-				if not 2 in [p: p in RamifiedRationalPrimes(AbsoluteField(F_t))| MyRamificationIndex(F_t,p) ne MyRamificationIndex(K,p)] then
-					beta:=beta_t;
-					F:=NumberField(x^2-beta);
-				end if;
-			end for;
+		for t in [-1,2,-2] do
+			beta_t:=beta*t;
+			F_t:=NumberField(x^2-beta_t);
+			if not 2 in [p: p in RamifiedRationalPrimes(AbsoluteField(F_t))| MyRamificationIndex(F_t,p) ne MyRamificationIndex(K,p)] then
+				beta:=beta_t;
+				F:=NumberField(x^2-beta);
+			end if;
+		end for;
 		elif not Is2MinimallyRamified(F,K) then 
 			_,sqrta:=IsSquare(E!a);
 			tau:=(1+sqrta)^2/2;
-			beta=tau*beta;
+			beta:=tau*beta;
 			F:=NumberField(x^2-beta);
 		end if;
 	end if;
@@ -161,7 +158,7 @@ end function;
 // requires input a,b,c to be integers!
 //////////////////////////////////////////////
 function RedeiSymbol(a,b,c: Additive:=false)
-	T:=TestDefined(a,b,c);
+	T:=TestRedeiDefined(a,b,c);
 	if T ne 0 then print ErrorCodesRedei(T); return 2; end if;
 	if IsSquare(a) or IsSquare(b) or IsSquare(c) then return 1 ; end if;
 	_, E, beta:=EFieldBetaConstructor(a,b);
