@@ -115,16 +115,13 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 	//p-ramification
 	ramprimes:=[p: p in RamifiedRationalPrimes(F)| MyRamificationIndex(F,p) ne MyRamificationIndex(K,p)];
 	oddprimes:=[p:p in ramprimes| IsOdd(p)];
-	avoidablyramifiedat2:= 2 in ramprimes and (IsOdd(Delta_a) or IsOdd(Delta_b));//the second statement is for forced ramification
-	// RamifiedRationalPrimes(F);
-	// RamifiedRationalPrimes(K);
-	// ramprimes;
-	// avoidablyramifiedat2;
 	for p in oddprimes do
 		if Delta_a mod p eq 0 and Delta_b mod p eq 0 then continue; // Forced Ramification
 		else beta:=p*beta;end if;
 	end for;
 	F:=NumberField(x^2-beta);
+	ramprimes:=[p: p in RamifiedRationalPrimes(F)| MyRamificationIndex(F,p) ne MyRamificationIndex(K,p)];//Redefining with new F to account for potentially introducing ramification at 2
+	avoidablyramifiedat2:= 2 in ramprimes and (IsOdd(Delta_a) or IsOdd(Delta_b));//the second statement is for forced ramification
 	//2-minimal ramification
 	if avoidablyramifiedat2 then
 		if (IsOdd(Delta_a) and IsOdd(Delta_b))//Lemma 7.1 part 1
