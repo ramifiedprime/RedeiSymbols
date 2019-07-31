@@ -143,7 +143,7 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 			F:=NumberField(x^2-beta);
 		end if;
 	end if;
-	return true, F;
+	return true, F, beta;
 end function;
 
 function GetCorrespondingIdeal(c, K)
