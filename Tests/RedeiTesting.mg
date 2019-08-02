@@ -1,4 +1,4 @@
-load "Redei.mg";
+load "../Redei.mg";
 
 function GenerateTriples(LBound,UBound:WriteOut:=false,Overwrite:=false,IgnoreSquares:=false)
 	ValidTriples:=[];

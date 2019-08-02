@@ -1,4 +1,4 @@
-load "../Redei/Redei.mg";
+load "../Redei.mg";
 MAX:=10000;
 K:=QuadraticField(-3);
 OK:=RingOfIntegers(K);
