@@ -146,6 +146,7 @@ function MinimallyRamifiedFConstructor(a,b,E,beta) // Uses 7.1 of Stevenhagen a 
 	return true, F, beta;
 end function;
 
+//Obtains the ideal in K corresponding to the squarefree part of the integer c.
 function GetCorrespondingIdeal(c, K)
 	OK:=RingOfIntegers(K);
 	C:=1*OK;
@@ -156,7 +157,7 @@ function GetCorrespondingIdeal(c, K)
 end function;
 
 //////////////////////////////////////////////
-// The RedeiSymbol
+// The RedeiSymbol and minimally Ramified Field functions.
 // requires input a,b,c to be integers!
 //////////////////////////////////////////////
 function RedeiSymbol(a,b,c: Additive:=false)
@@ -171,11 +172,6 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	else
 		K:=NumberField(x^2-a*b);
 	end if;
-	// K;
-	// E;
-	// beta;
-	// F;
-	// C;
 	if not IsSubfield(K,F) then print "ERROR: Catastrophic failure, F was not extension of K.";end if;
 	if IsSquare(a/b) then // abelian extension doesnt like RationalsAsNumberField
 		AbF:=AbelianExtension(RelativeField(RationalField(),F));
@@ -190,4 +186,21 @@ function RedeiSymbol(a,b,c: Additive:=false)
 	else
 		return RtnValues(Art(C)(FF.1) eq ComplexConjugate(FF.1), Additive);
 	end if;
+end function;
+
+
+//Implements the above in order to obtain the minimally ramified field $F$ from
+//suitable a,b.
+function GetMinimallyRamifiedF(a,b)
+	if TestHilbert(a,b) ne 0 then
+		print "ERROR:  The Hilbert Symbol criterion was not met.";
+		return false;
+	end if;
+	if IsSquare(a) or IsSquare(b) then
+		print "ERROR: One of the inputs is square.";
+		return false;
+	end if;
+	_,E,beta:=EFieldBetaConstructor(a,b);
+	_,F,beta:=MinimallyRamifiedFConstructor(a,b,E,beta);
+	return F,E,beta;
 end function;
