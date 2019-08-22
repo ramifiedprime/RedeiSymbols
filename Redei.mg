@@ -36,7 +36,7 @@ end function;
 // Tests for errors catching and general
 // admin functions.
 ///////////////////////////////////////
-function TestHilbert(a,b) // 0 for all were 1, 1 for something was not trivial
+function TestHilbert(a,b) // 0 for all were 1, else for something was not trivial
 	divs:={p : p in PrimeDivisors(a) cat PrimeDivisors(b)}; // dont need to check infinity by reciprocity
 	for p in divs do
 		if HilbertSymbol(a,b,p) ne 1 then return p; end if;
@@ -163,7 +163,7 @@ end function;
 function RedeiSymbol(a,b,c: Additive:=false)
 	T:=TestRedeiDefined(a,b,c);
 	if T ne 0 then print ErrorCodesRedei(T); return 2; end if;
-	if IsSquare(a) or IsSquare(b) or IsSquare(c) then return 1 ; end if;
+	if IsSquare(a) or IsSquare(b) or IsSquare(c) then return RtnValues(true,Additive); end if;
 	_, E, beta:=EFieldBetaConstructor(a,b);
 	_, F:=MinimallyRamifiedFConstructor(a,b,E,beta);
 	P<x>:=PolynomialRing(RationalField());
